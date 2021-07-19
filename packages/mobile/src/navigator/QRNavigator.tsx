@@ -19,6 +19,7 @@ import { Screens } from 'src/navigator/Screens'
 import { QRTabParamList } from 'src/navigator/types'
 import QRCode from 'src/qrcode/QRCode'
 import QRScanner from 'src/qrcode/QRScanner'
+import QRSelector from 'src/qrcode/QRSelector'
 import QRTabBar from 'src/qrcode/QRTabBar'
 import { handleBarcodeDetected, QrCode, SVG } from 'src/send/actions'
 import Logger from 'src/utils/Logger'
@@ -147,6 +148,9 @@ export default function QRNavigator() {
       </Tab.Screen>
       <Tab.Screen name={Screens.QRScanner} options={{ title: t('scanCode') }}>
         {(props) => <AnimatedScannerScene {...props} position={position} />}
+      </Tab.Screen>
+      <Tab.Screen name={Screens.QRSelector} options={{ title: 'Select' }}>
+        {() => <QRSelector />}
       </Tab.Screen>
     </Tab.Navigator>
   )
