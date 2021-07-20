@@ -541,6 +541,8 @@ PODS:
     - React
   - RNPermissions (3.0.3):
     - React-Core
+  - RNQrGenerator (1.1.7):
+    - React
   - RNReanimated (2.0.0-rc.1):
     - DoubleConversion
     - FBLazyVector
@@ -695,6 +697,7 @@ DEPENDENCIES:
   - RNKeychain (from `../../../node_modules/react-native-keychain`)
   - RNLocalize (from `../../../node_modules/react-native-localize`)
   - RNPermissions (from `../../../node_modules/react-native-permissions`)
+  - RNQrGenerator (from `../../../node_modules/rn-qr-generator`)
   - RNReanimated (from `../../../node_modules/react-native-reanimated`)
   - RNScreens (from `../../../node_modules/react-native-screens`)
   - RNSecureRandom (from `../../../node_modules/react-native-securerandom`)
@@ -887,6 +890,8 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/react-native-localize"
   RNPermissions:
     :path: "../../../node_modules/react-native-permissions"
+  RNQrGenerator:
+    :path: "../../../node_modules/rn-qr-generator"
   RNReanimated:
     :path: "../../../node_modules/react-native-reanimated"
   RNScreens:
@@ -1005,6 +1010,7 @@ SPEC CHECKSUMS:
   RNKeychain: bf2d7e9a0ae7a073c07770dd2aa6d11c67581733
   RNLocalize: b6df30cc25ae736d37874f9bce13351db2f56796
   RNPermissions: 034db8a73d562766f990c89abbdeaa5d6e204c67
+  RNQrGenerator: 86fb623932ed29627c6a95b8dc94af5e93d8abe1
   RNReanimated: b2d6785c8fc1f61e1c81179c64c9b6b1a00e6ab5
   RNScreens: cf198f915f8a2bf163de94ca9f5bfc8d326c3706
   RNSecureRandom: 0dcee021fdb3d50cd5cee5db0ebf583c42f5af0e

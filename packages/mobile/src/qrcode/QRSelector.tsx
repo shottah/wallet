@@ -1,13 +1,31 @@
 import React from 'react'
 import { Button, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { launchImageLibrary } from 'react-native-image-picker'
+import RNQRGenerator from 'rn-qr-generator'
 
 export default function QRSelector() {
   const [response, setResponse] = React.useState<any>(null)
+  const [, setDetectedValues] = React.useState<any>([])
 
   const onButtonPress = React.useCallback((type, options) => {
     launchImageLibrary(options, setResponse)
   }, [])
+
+  const getQRValues = async () => {
+    RNQRGenerator.detect({ uri: response.assets[0].uri })
+      .then((res) => {
+        if (res.values.length === 0) {
+          setDetectedValues(['QR code not found'])
+          alert('QR code not found')
+        } else {
+          setDetectedValues(res.values)
+          alert(res.values)
+        }
+      })
+      .catch((err) => {
+        console.warn('Cannot detect', err)
+      })
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -25,11 +43,7 @@ export default function QRSelector() {
               })
             }
           ></Button>
-          <Button
-            title="Use Image"
-            onPress={() => alert('Image Selected')}
-            disabled={!response}
-          ></Button>
+          <Button title="QR Values" onPress={() => getQRValues()} disabled={!response}></Button>
         </View>
         {response !== null ? (
           <View style={styles.imageContainer}>
@@ -54,11 +68,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     marginVertical: 8,
     marginTop: 100,
-  },
-
-  image: {
-    marginVertical: 24,
-    alignItems: 'center',
   },
   imageContainer: {
     backgroundColor: '#dcecfb',
