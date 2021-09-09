@@ -67,6 +67,37 @@ export async function getTokenContract(token: Currency) {
   }
 }
 
+export async function getTokenContractFromAddress(tokenAddress: string) {
+  Logger.debug(TAG + '@getTokenContract', `Fetching contract for address ${tokenAddress}`)
+  const contractKit = await getContractKitAsync(false)
+  const contracts = await Promise.all([
+    contractKit.contracts.getGoldToken(),
+    contractKit.contracts.getStableToken(StableToken.cUSD),
+    contractKit.contracts.getStableToken(StableToken.cEUR),
+  ])
+  return contracts.find((contract) => contract.address === tokenAddress)
+}
+
+// TODO: To avoid making three requests each time this function is called, we should store the token
+// addresses in the redux store. We will have to do this while working on multi-token support, so that
+// is a good moment to clean this up.
+export async function getStableCurrencyFromAddress(tokenAddress: string): Promise<Currency | null> {
+  const contractKit = await getContractKitAsync(false)
+  const [celoContract, cUsdContract, cEurContract] = await Promise.all([
+    contractKit.contracts.getGoldToken(),
+    contractKit.contracts.getStableToken(StableToken.cUSD),
+    contractKit.contracts.getStableToken(StableToken.cEUR),
+  ])
+  if (celoContract.address === tokenAddress) {
+    return Currency.Celo
+  } else if (cUsdContract.address === tokenAddress) {
+    return Currency.Dollar
+  } else if (cEurContract.address === tokenAddress) {
+    return Currency.Euro
+  }
+  return null
+}
+
 export function* fetchToken(token: Currency, tag: string) {
   try {
     Logger.debug(tag, `Fetching ${token} balance`)

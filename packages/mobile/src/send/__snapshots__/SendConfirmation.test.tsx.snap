@@ -154,6 +154,7 @@ exports[`SendConfirmation renders correctly 1`] = `
                   }
                 >
                   <Text
+                    allowFontScaling={false}
                     style={
                       Array [
                         Object {
@@ -758,6 +759,7 @@ exports[`SendConfirmation renders correctly 1`] = `
                   Object {
                     "alignItems": "center",
                     "flexDirection": "row",
+                    "flexWrap": "wrap",
                   },
                   undefined,
                 ]
@@ -778,6 +780,7 @@ exports[`SendConfirmation renders correctly 1`] = `
               <View
                 style={
                   Object {
+                    "marginLeft": 7,
                     "transform": Array [
                       Object {
                         "rotate": "0deg",
@@ -804,6 +807,7 @@ exports[`SendConfirmation renders correctly 1`] = `
                 Array [
                   Object {
                     "flexDirection": "row",
+                    "flexWrap": "wrap",
                     "justifyContent": "space-between",
                     "marginVertical": 5,
                   },
@@ -845,6 +849,7 @@ exports[`SendConfirmation renders correctly 1`] = `
           Array [
             Object {
               "flexDirection": "row",
+              "flexWrap": "wrap",
               "justifyContent": "space-between",
               "marginVertical": 5,
             },
@@ -922,6 +927,7 @@ exports[`SendConfirmation renders correctly 1`] = `
           Array [
             Object {
               "flexDirection": "row",
+              "flexWrap": "wrap",
               "justifyContent": "space-between",
               "marginVertical": 5,
             },
@@ -1106,6 +1112,7 @@ exports[`SendConfirmation renders correctly 1`] = `
           >
             <Text
               accessibilityLabel="global:send"
+              maxFontSizeMultiplier={1}
               style={
                 Object {
                   "color": "#FFFFFF",

@@ -48,6 +48,7 @@ exports[`ReclaimPaymentConfirmationCard renders correctly for send payment confi
         }
       >
         <Text
+          allowFontScaling={false}
           style={
             Array [
               Object {
@@ -223,6 +224,7 @@ exports[`ReclaimPaymentConfirmationCard renders correctly for send payment confi
       Array [
         Object {
           "flexDirection": "row",
+          "flexWrap": "wrap",
           "justifyContent": "space-between",
           "marginVertical": 5,
         },
@@ -290,6 +292,7 @@ exports[`ReclaimPaymentConfirmationCard renders correctly for send payment confi
       Array [
         Object {
           "flexDirection": "row",
+          "flexWrap": "wrap",
           "justifyContent": "space-between",
           "marginVertical": 5,
         },
@@ -627,6 +630,7 @@ exports[`ReclaimPaymentConfirmationCard renders correctly for send payment confi
       Array [
         Object {
           "flexDirection": "row",
+          "flexWrap": "wrap",
           "justifyContent": "space-between",
           "marginVertical": 5,
         },
@@ -704,6 +708,7 @@ exports[`ReclaimPaymentConfirmationCard renders correctly for send payment confi
       Array [
         Object {
           "flexDirection": "row",
+          "flexWrap": "wrap",
           "justifyContent": "space-between",
           "marginVertical": 5,
         },
