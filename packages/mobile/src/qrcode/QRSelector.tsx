@@ -1,6 +1,8 @@
+import colors from '@celo/react-components/styles/colors'
 import React from 'react'
-import { Button, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Button, Image, Linking, StyleSheet, Text, View } from 'react-native'
 import { launchImageLibrary } from 'react-native-image-picker'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import RNQRGenerator from 'rn-qr-generator'
 
 export default function QRSelector() {
@@ -19,7 +21,7 @@ export default function QRSelector() {
           alert('QR code not found')
         } else {
           setDetectedValues(res.values)
-          alert(res.values)
+          Linking.openURL(res.values[0]).catch((err) => console.error("Couldn't load page", err))
         }
       })
       .catch((err) => {
@@ -29,30 +31,38 @@ export default function QRSelector() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
-        <View style={styles.buttonContainer}>
-          <Button
-            title="Select Image"
-            onPress={() =>
-              onButtonPress('library', {
-                maxHeight: 200,
-                maxWidth: 200,
-                selectionLimit: 1,
-                mediaType: 'photo',
-                includeBase64: false,
-              })
-            }
-          ></Button>
-          <Button title="QR Values" onPress={() => getQRValues()} disabled={!response}></Button>
-        </View>
-        {response !== null ? (
-          <View style={styles.imageContainer}>
+      <View style={styles.buttonContainer}>
+        <Button
+          title="Select Image"
+          onPress={() =>
+            onButtonPress('library', {
+              maxHeight: 200,
+              maxWidth: 200,
+              selectionLimit: 1,
+              mediaType: 'photo',
+              includeBase64: false,
+            })
+          }
+        ></Button>
+        <Button title="Use QR Code" onPress={() => getQRValues()} disabled={!response}></Button>
+      </View>
+      {response !== null ? (
+        <View style={styles.imageContainer}>
+          {response && response.assets && response.assets[0].uri ? (
+            <Image
+              source={{
+                uri: `${response.assets[0].uri}`,
+                width: 200,
+                height: 200,
+              }}
+            />
+          ) : (
             <Text style={styles.text}>{JSON.stringify(response, null, 2)}</Text>
-          </View>
-        ) : (
-          <></>
-        )}
-      </ScrollView>
+          )}
+        </View>
+      ) : (
+        <></>
+      )}
     </SafeAreaView>
   )
 }
@@ -60,7 +70,9 @@ export default function QRSelector() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'black',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    backgroundColor: colors.dark,
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -70,7 +82,7 @@ const styles = StyleSheet.create({
     marginTop: 100,
   },
   imageContainer: {
-    backgroundColor: '#dcecfb',
+    backgroundColor: colors.light,
     flexShrink: 1,
     marginVertical: 8,
     padding: 8,
