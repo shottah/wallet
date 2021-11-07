@@ -14,6 +14,12 @@ jobs:
         with:
           node-version: '12'
           check-latest: true
+      - uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+            */*/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
       - name: Install package dependencies
         run: yarn
       - name: Build mobile dependencies
