@@ -4,6 +4,12 @@ set -euo pipefail
 # Default ENVFILE if not set
 export ENVFILE="${ENVFILE:-.env.test}"
 
+echo "env #####"
+echo $ANDROID_NDK_HOME
+echo $ANDROID_NDK_ROOT
+echo $ANDROID_NDK_LATEST_HOME
+echo "env #####"
+
 # ========================================
 # Build and run the end-to-end tests
 # ========================================
