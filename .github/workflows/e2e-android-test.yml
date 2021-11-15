@@ -26,6 +26,10 @@ jobs:
         run: yarn build --scope @celo/mobile --include-filtered-dependencies
       - name: run tests
         uses: reactivecircus/android-emulator-runner@v2
+        env:
+          ANDROID_NDK_LATEST_HOME: /Users/runner/Library/Android/sdk/ndk/22.1.7171670
+          ANDROID_NDK_HOME: /Users/runner/Library/Android/sdk/ndk/22.1.7171670
+          ANDROID_NDK_ROOT: /Users/runner/Library/Android/sdk/ndk/22.1.7171670
         with:
           api-level: 29
           ndk: 22.1.7171670
