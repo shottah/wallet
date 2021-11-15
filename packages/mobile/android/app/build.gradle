@@ -150,6 +150,8 @@ def enableHermes = project.ext.react.get("enableHermes", false);
 def appVersionCode = Integer.valueOf(System.env.CIRCLE_BUILD_NUM ?: VERSION_CODE)
 
 android {
+    ndkVersion = "22.1.7171670"
+
     compileSdkVersion rootProject.ext.compileSdkVersion
 
     compileOptions {
