@@ -10,6 +10,9 @@ echo $ANDROID_NDK_ROOT
 echo $ANDROID_NDK_LATEST_HOME
 echo "env #####"
 
+rm -rf /Users/runner/Library/Android/sdk/ndk/23.1.7779620
+rm -rf /Users/runner/Library/Android/sdk/ndk-bundle
+
 # ========================================
 # Build and run the end-to-end tests
 # ========================================
