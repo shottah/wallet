@@ -28,4 +28,5 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 29
+          profile: Pixel_API_29_AOSP_x86_64
           script: cd packages/mobile && yarn run test:e2e:android -w 1
