@@ -165,21 +165,21 @@ if [ $PLATFORM = "android" ]; then
 
     startPackager
     
-    NUM_DEVICES=`adb devices -l | wc -l`
-    if [ $NUM_DEVICES -gt 2 ]; then
-      echo "Emulator already running or device attached. Please shutdown / remove first"
-      exit 1
-    fi
+#    NUM_DEVICES=`adb devices -l | wc -l`
+#    if [ $NUM_DEVICES -gt 2 ]; then
+#      echo "Emulator already running or device attached. Please shutdown / remove first"
+#      exit 1
+#    fi
 
-    echo "Starting the emulator"
-    $ANDROID_SDK_ROOT/emulator/emulator \
-      -avd $VD_NAME \
-      -no-boot-anim \
-      -noaudio \
-      -no-snapshot \
-      -netdelay $NET_DELAY \
-      ${CI:+-gpu swiftshader_indirect -no-window} \
-      &
+#    echo "Starting the emulator"
+#    $ANDROID_SDK_ROOT/emulator/emulator \
+#      -avd $VD_NAME \
+#      -no-boot-anim \
+#      -noaudio \
+#      -no-snapshot \
+#      -netdelay $NET_DELAY \
+#      ${CI:+-gpu swiftshader_indirect -no-window} \
+#      &
 
     echo "Waiting for device to connect to Wifi, this is a good proxy the device is ready"
     until [ `adb shell dumpsys wifi | grep "mNetworkInfo" | grep "state: CONNECTED" | wc -l` -gt 0 ]
