@@ -9,7 +9,7 @@ export default RestoreAccountOnboarding = () => {
     await sleep(5000)
     await launchApp({
       delete: true,
-      permissions: { notifications: 'YES', contacts: 'YES' },
+      permissions: { notifications: 'YES', contacts: 'YES', userTracking: 'YES' },
     })
     await sleep(5000)
     await dismissBanners()

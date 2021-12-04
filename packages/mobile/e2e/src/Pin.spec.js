@@ -9,7 +9,7 @@ describe('Given PIN', () => {
     await device.installApp()
     await launchApp({
       newInstance: false,
-      permissions: { notifications: 'YES', contacts: 'YES' },
+      permissions: { notifications: 'YES', contacts: 'YES', userTracking: 'YES' },
     })
     await setUrlDenyList()
     await quickOnboarding()

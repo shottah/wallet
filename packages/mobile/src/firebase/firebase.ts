@@ -10,7 +10,7 @@ import { Platform } from 'react-native'
 import { eventChannel } from 'redux-saga'
 import { call, select, take } from 'redux-saga/effects'
 import { RemoteConfigValues } from 'src/app/saga'
-import { FIREBASE_ENABLED } from 'src/config'
+import { FIREBASE_ENABLED, isE2EEnv } from 'src/config'
 import { handleNotification } from 'src/firebase/notifications'
 import { REMOTE_CONFIG_VALUES_DEFAULTS } from 'src/firebase/remoteConfigValuesDefaults'
 import { currentLanguageSelector } from 'src/i18n/selectors'
@@ -241,8 +241,14 @@ export async function fetchRemoteConfigValues(): Promise<RemoteConfigValues | nu
   }
 
   await remoteConfig().setDefaults(REMOTE_CONFIG_VALUES_DEFAULTS)
+
+  // Prevent fetch of remote config values for e2e tests
+  if (isE2EEnv) {
+    return null
+  }
   // Don't cache values so we fetch the latest every time. https://rnfirebase.io/remote-config/usage
   await remoteConfig().setConfigSettings({ minimumFetchIntervalMillis: 0 })
+  // Don't fetch remote feature flags for e2e tests to prevent unexpected changes to e2e tests
   await remoteConfig().fetchAndActivate()
 
   const flags: FirebaseRemoteConfigTypes.ConfigValues = remoteConfig().getAll()

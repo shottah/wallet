@@ -9,7 +9,7 @@ import { check, PERMISSIONS, request, RESULTS } from 'react-native-permissions'
 import { AppEvents } from 'src/analytics/Events'
 import { AnalyticsPropertiesList } from 'src/analytics/Properties'
 import { getCurrentUserTraits } from 'src/analytics/selectors'
-import { DEFAULT_TESTNET, FIREBASE_ENABLED, isE2EEnv, SEGMENT_API_KEY } from 'src/config'
+import { DEFAULT_TESTNET, FIREBASE_ENABLED, SEGMENT_API_KEY } from 'src/config'
 import { store } from 'src/redux/store'
 import Logger from 'src/utils/Logger'
 import { isPresent } from 'src/utils/typescript'
@@ -194,8 +194,7 @@ class ValoraAnalytics {
   }
 
   private async requestTrackingPermissionIfNeeded() {
-    // TODO: remove `isE2EEnv` and set permission via Detox when we upgrade
-    if (Platform.OS !== 'ios' || isE2EEnv) {
+    if (Platform.OS !== 'ios') {
       return
     }
 

@@ -9,7 +9,7 @@ export default NewAccountOnboarding = () => {
     await sleep(5000)
     await launchApp({
       delete: true,
-      permissions: { notifications: 'YES', contacts: 'YES' },
+      permissions: { notifications: 'YES', contacts: 'YES', userTracking: 'YES' },
     })
     await setUrlDenyList()
     await sleep(5000)

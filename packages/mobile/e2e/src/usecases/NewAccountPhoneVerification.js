@@ -22,7 +22,7 @@ export default NewAccountPhoneVerification = () => {
   beforeEach(async () => {
     await device.launchApp({
       delete: true,
-      permissions: { notifications: 'YES', contacts: 'YES' },
+      permissions: { notifications: 'YES', contacts: 'YES', userTracking: 'YES' },
     })
     // Enable url deny list
     await setUrlDenyList()
