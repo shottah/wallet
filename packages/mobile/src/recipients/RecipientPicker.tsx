@@ -19,6 +19,7 @@ import { connect } from 'react-redux'
 import { SendEvents } from 'src/analytics/Events'
 import ValoraAnalytics from 'src/analytics/ValoraAnalytics'
 import { withTranslation } from 'src/i18n'
+import { getAddressFromAlias } from 'src/recipients/NomSpaceUtils'
 import {
   getRecipientFromAddress,
   MobileRecipient,
@@ -31,6 +32,7 @@ import RecipientItem from 'src/recipients/RecipientItem'
 import { recipientInfoSelector } from 'src/recipients/reducer'
 import { RootState } from 'src/redux/reducers'
 import SendToAddressWarning from 'src/send/SendToAddressWarning'
+import Logger from 'src/utils/Logger'
 
 interface Section {
   key: string
@@ -63,6 +65,34 @@ export class RecipientPicker extends React.Component<RecipientProps> {
   state = {
     keyboardVisible: false,
     isSendToAddressWarningVisible: false,
+    nomSpaceAlias: { address: undefined, query: undefined },
+  }
+
+  isNomSpaceAliasUpdated = () => {
+    return this.state.nomSpaceAlias.query === this.props.searchQuery
+  }
+
+  updateAlias = async () => {
+    console.log(
+      `Update Alias with nomSpaceAlias: ${JSON.stringify(
+        this.state.nomSpaceAlias
+      )} query: ${JSON.stringify(this.props.searchQuery)}`
+    )
+    if (!this.isNomSpaceAliasUpdated()) {
+      const addressFromAlias = await getAddressFromAlias(this.props.searchQuery)
+      this.setState({
+        ...this.state,
+        nomSpaceAlias: { address: addressFromAlias, query: this.props.searchQuery },
+      })
+    }
+  }
+
+  componentDidMount = async () => {
+    await this.updateAlias()
+  }
+
+  componentDidUpdate = async () => {
+    await this.updateAlias()
   }
 
   onToggleKeyboard = (visible: boolean) => {
@@ -90,6 +120,10 @@ export class RecipientPicker extends React.Component<RecipientProps> {
   renderItemSeparator = () => <View style={styles.separator} />
 
   renderEmptyView = () => {
+    Logger.info(
+      `Search status: ${this.props.searchQuery} ${JSON.stringify(this.state.nomSpaceAlias)}`
+    )
+
     const parsedNumber = parsePhoneNumber(
       this.props.searchQuery,
       this.props.defaultCountryCode ? this.props.defaultCountryCode : undefined
@@ -100,8 +134,17 @@ export class RecipientPicker extends React.Component<RecipientProps> {
         : this.renderSendToPhoneNumber(parsedNumber.displayNumber, parsedNumber.e164Number)
     }
     if (isValidAddress(this.props.searchQuery)) {
-      return this.renderSendToAddress()
+      return this.renderSendToAddress(this.props.searchQuery.toLowerCase())
     }
+
+    if (this.state.nomSpaceAlias.address) {
+      return this.renderSendToAddress(
+        // @ts-ignore
+        this.state.nomSpaceAlias.address.toLowerCase(),
+        this.state.nomSpaceAlias.query
+      )
+    }
+
     return this.renderNoContentEmptyView()
   }
 
@@ -167,16 +210,18 @@ export class RecipientPicker extends React.Component<RecipientProps> {
     )
   }
 
-  renderSendToAddress = () => {
+  renderSendToAddress = (address: string, alias?: string) => {
     const {
-      searchQuery,
       recipientInfo,
       onSelectRecipient,
       showSendToAddressWarning,
       isOutgoingPaymentRequest,
     } = this.props
-    const searchedAddress = searchQuery.toLowerCase()
-    const recipient = getRecipientFromAddress(searchedAddress, recipientInfo)
+    const recipient = getRecipientFromAddress(address, recipientInfo)
+
+    if (alias) {
+      recipient.name = `Send to Alias: ${alias}`
+    }
 
     if (recipientHasNumber(recipient) || isOutgoingPaymentRequest) {
       return (
