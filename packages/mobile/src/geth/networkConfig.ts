@@ -70,7 +70,7 @@ const CIP8_AUTHORIZER_URL_MAINNET = 'https://rc1-stokado.celo-testnet.org/api/au
 const CIP8_METADATA_URL_MAINNET = 'https://rc1-stokado-data.celo-testnet.org'
 
 const PROVIDER_FETCH_URL_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/fetchProviders`
-const PROVIDER_FETCH_URL_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/fetchProviders`
+const PROVIDER_FETCH_URL_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/fetchProvidersTest`
 
 const GET_FIAT_CONNECT_PROVIDERS_ALFAJORES = `${CLOUD_FUNCTIONS_STAGING}/getFiatConnectProviders`
 const GET_FIAT_CONNECT_PROVIDERS_MAINNET = `${CLOUD_FUNCTIONS_MAINNET}/getFiatConnectProviders`
