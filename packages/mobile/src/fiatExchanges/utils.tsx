@@ -1,7 +1,6 @@
 import firebase from '@react-native-firebase/app'
 import { default as DeviceInfo } from 'react-native-device-info'
 import { PaymentMethod } from 'src/fiatExchanges/FiatExchangeOptions'
-import { CicoProvider } from 'src/fiatExchanges/ProviderOptionsScreen'
 import networkConfig from 'src/geth/networkConfig'
 import { LocalCurrencyCode } from 'src/localCurrency/consts'
 import { UserLocationData } from 'src/networkInfo/saga'
@@ -21,20 +20,33 @@ interface ProviderRequestData {
   txType: 'buy' | 'sell'
 }
 
+export interface FetchProvidersOutput {
+  name: string
+  restricted: boolean
+  unavailable?: boolean
+  paymentMethods: PaymentMethod[]
+  url?: string
+  logoWide: string
+  logo: string
+  quote?: RawSimplexQuote | RawProviderQuote[]
+  cashIn: boolean
+  cashOut: boolean
+}
+
 export interface UserAccountCreationData {
   ipAddress: string
   timestamp: string
   userAgent: string
 }
 
-export interface ProviderQuote {
+interface RawProviderQuote {
   paymentMethod: PaymentMethod
   digitalAsset: string
   returnedAmount: number
   fiatFee: number
 }
 
-export interface SimplexQuote {
+interface RawSimplexQuote {
   user_id: string
   quote_id: string
   wallet_id: string
@@ -72,6 +84,71 @@ interface SimplexPaymentData {
   checkoutHtml: string
 }
 
+interface ProviderInfo {
+  name: string
+  logoWide: string
+  logo: string
+}
+
+export type ProviderQuote = RawProviderQuote & {
+  cashIn: boolean
+  cashOut: boolean
+  url: string
+}
+
+export type SimplexQuote = RawSimplexQuote & {
+  cashIn: boolean
+  cashOut: boolean
+  paymentMethod: PaymentMethod
+}
+
+export interface CicoQuote {
+  quote: ProviderQuote | SimplexQuote
+  provider: ProviderInfo
+}
+
+export const getQuotes = (providers: FetchProvidersOutput[] | undefined): CicoQuote[] => {
+  if (!providers) {
+    return []
+  }
+  const cicoQuotes: CicoQuote[] = []
+  providers.forEach((provider) => {
+    if (!provider.quote || provider.restricted || provider.unavailable) return
+    if (Array.isArray(provider.quote)) {
+      provider.quote.forEach((quote) => {
+        cicoQuotes.push({
+          quote: {
+            ...quote,
+            cashIn: provider.cashIn,
+            cashOut: provider.cashOut,
+            url: provider.url || '',
+          },
+          provider: {
+            name: provider.name,
+            logo: provider.logo,
+            logoWide: provider.logoWide,
+          },
+        })
+      })
+    } else {
+      cicoQuotes.push({
+        quote: {
+          ...provider.quote,
+          cashIn: provider.cashIn,
+          cashOut: provider.cashOut,
+          paymentMethod: provider.paymentMethods[0],
+        },
+        provider: {
+          name: provider.name,
+          logo: provider.logo,
+          logoWide: provider.logoWide,
+        },
+      })
+    }
+  })
+  return cicoQuotes
+}
+
 const composePostObject = (body: any) => ({
   method: 'POST',
   headers: {
@@ -83,7 +160,7 @@ const composePostObject = (body: any) => ({
 
 export const fetchProviders = async (
   requestData: ProviderRequestData
-): Promise<CicoProvider[] | undefined> => {
+): Promise<FetchProvidersOutput[] | undefined> => {
   try {
     const response = await fetchWithTimeout(
       networkConfig.providerFetchUrl,
@@ -143,48 +220,24 @@ export const fetchSimplexPaymentData = async (
   }
 }
 
-export const isSimplexQuote = (quote?: SimplexQuote | ProviderQuote): quote is SimplexQuote =>
-  !!quote && 'wallet_id' in quote
+export const isSimplexQuote = (
+  quote?: SimplexQuote | ProviderQuote | RawProviderQuote | RawSimplexQuote
+): quote is SimplexQuote => !!quote && 'wallet_id' in quote
 
-export const isProviderQuote = (quote?: SimplexQuote | ProviderQuote): quote is ProviderQuote =>
-  !!quote && 'returnedAmount' in quote
+export const isProviderQuote = (
+  quote?: SimplexQuote | ProviderQuote | RawProviderQuote | RawSimplexQuote
+): quote is ProviderQuote => !!quote && 'returnedAmount' in quote
 
-export const getLowestFeeValueFromQuotes = (quote?: SimplexQuote | ProviderQuote[]) => {
-  if (!quote) {
-    return
-  }
-
-  if (Array.isArray(quote)) {
-    if (quote.length > 1 && isProviderQuote(quote[0]) && isProviderQuote(quote[1])) {
-      return quote[0].fiatFee < quote[1].fiatFee ? quote[0].fiatFee : quote[1].fiatFee
-    } else if (isProviderQuote(quote[0])) {
-      return quote[0].fiatFee
-    }
-  } else if (isSimplexQuote(quote)) {
+export const getFeeValueFromQuotes = (quote?: SimplexQuote | ProviderQuote) => {
+  if (isSimplexQuote(quote)) {
     return quote.fiat_money.total_amount - quote.fiat_money.base_amount
   }
+  return quote?.fiatFee
 }
 
-// Leaving unoptimized for now because sorting is most relevant when fees will be visible
-export const sortProviders = (provider1: CicoProvider, provider2: CicoProvider) => {
-  if (provider1.unavailable) {
-    return 1
-  }
-
-  if (provider2.unavailable) {
-    return -1
-  }
-
-  if (provider1.restricted && !provider2.restricted) {
-    return 1
-  }
-
-  if (provider2.restricted && !provider1.restricted) {
-    return -1
-  }
-
-  const providerFee1 = getLowestFeeValueFromQuotes(provider1.quote)
-  const providerFee2 = getLowestFeeValueFromQuotes(provider2.quote)
+export const sortQuotes = ({ quote: quote1 }: CicoQuote, { quote: quote2 }: CicoQuote) => {
+  const providerFee1 = getFeeValueFromQuotes(quote1)
+  const providerFee2 = getFeeValueFromQuotes(quote2)
 
   if (providerFee1 === undefined) {
     return 1

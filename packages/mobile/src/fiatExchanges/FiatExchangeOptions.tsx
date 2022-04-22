@@ -20,26 +20,18 @@ import { celoEuroEnabledSelector } from 'src/app/selectors'
 import BackButton from 'src/components/BackButton'
 import Button, { BtnSizes, BtnTypes } from 'src/components/Button'
 import Touchable from 'src/components/Touchable'
-import { BIDALI_CURRENCIES } from 'src/fiatExchanges/BidaliScreen'
 import FundingEducationDialog from 'src/fiatExchanges/FundingEducationDialog'
-import {
-  fetchLocalCicoProviders,
-  getAvailableLocalProviders,
-  LocalCicoProvider,
-} from 'src/fiatExchanges/utils'
 import i18n from 'src/i18n'
 import InfoIcon from 'src/icons/InfoIcon'
 import RadioButton from 'src/icons/RadioButton'
 import { emptyHeader } from 'src/navigator/Headers'
-import { navigate, navigateHome } from 'src/navigator/NavigationService'
+import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
-import { userLocationDataSelector } from 'src/networkInfo/selectors'
 import colors from 'src/styles/colors'
 import fontStyles from 'src/styles/fonts'
 import variables from 'src/styles/variables'
 import { Currency } from 'src/utils/currencies'
-import { navigateToURI } from 'src/utils/linking'
 
 type RouteProps = StackScreenProps<StackParamList, Screens.FiatExchangeOptions>
 type Props = RouteProps
@@ -107,89 +99,28 @@ function CurrencyRadioItem({
   )
 }
 
-function PaymentMethodRadioItem({
-  selected,
-  onSelect,
-  text,
-  enabled = true,
-  testID,
-}: {
-  selected: boolean
-  onSelect: () => void
-  text: string
-  enabled?: boolean
-  testID?: string
-}): JSX.Element {
-  return (
-    <TouchableWithoutFeedback onPress={onSelect} disabled={!enabled}>
-      <View style={styles.paymentMethodItemContainer}>
-        <RadioButton selected={selected} disabled={!enabled} />
-        <Text
-          testID={testID}
-          style={[styles.paymentMethodItemText, enabled ? {} : { color: colors.gray3 }]}
-        >
-          {text}
-        </Text>
-      </View>
-    </TouchableWithoutFeedback>
-  )
-}
-
 function FiatExchangeOptions({ route, navigation }: Props) {
   const { t } = useTranslation()
   const isCashIn = route.params?.isCashIn ?? true
-  const userLocationData = useSelector(userLocationDataSelector)
   const celoEuroEnabled = useSelector(celoEuroEnabledSelector)
 
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>(Currency.Dollar)
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>(
-    isCashIn ? PaymentMethod.Card : PaymentMethod.Exchange
-  )
-  const [selectedLocalProvider, setSelectedLocalProvider] = useState<LocalCicoProvider>()
-  const [isEducationDialogVisible, setEducationDialogVisible] = useState(false)
+  isCashIn ? PaymentMethod.Card : PaymentMethod.Exchange
 
-  const asset = selectedCurrency === Currency.Dollar ? 'cusd' : 'celo'
-  const flow = isCashIn ? 'cashIn' : 'cashOut'
+  const [isEducationDialogVisible, setEducationDialogVisible] = useState(false)
 
   const goToProvider = () => {
     ValoraAnalytics.track(FiatExchangeEvents.cico_option_chosen, {
       isCashIn,
-      paymentMethod: selectedPaymentMethod,
       currency: selectedCurrency,
     })
-    if (selectedPaymentMethod === PaymentMethod.Exchange) {
-      navigate(Screens.ExternalExchanges, {
-        currency: selectedCurrency,
-        isCashIn: isCashIn,
-      })
-    } else if (selectedPaymentMethod === PaymentMethod.LocalProvider && selectedLocalProvider) {
-      navigateToURI(selectedLocalProvider[asset].url)
-      navigateHome()
-    } else if (selectedPaymentMethod === PaymentMethod.GiftCard) {
-      navigate(Screens.BidaliScreen, { currency: selectedCurrency })
-    } else if (selectedPaymentMethod === PaymentMethod.Address) {
-      navigate(Screens.WithdrawCeloScreen, { isCashOut: true })
-    } else if (
-      selectedPaymentMethod === PaymentMethod.Bank ||
-      selectedPaymentMethod === PaymentMethod.Card
-    ) {
-      navigate(Screens.FiatExchangeAmount, {
-        currency: selectedCurrency,
-        paymentMethod: selectedPaymentMethod,
-        isCashIn,
-      })
-    }
+    navigate(Screens.FiatExchangeAmount, {
+      currency: selectedCurrency,
+      isCashIn,
+    })
   }
 
   const onSelectCurrency = (currency: Currency) => () => setSelectedCurrency(currency)
-
-  const onSelectPaymentMethod = (
-    paymentMethod: PaymentMethod,
-    localProvider?: LocalCicoProvider
-  ) => () => {
-    setSelectedPaymentMethod(paymentMethod)
-    setSelectedLocalProvider(localProvider)
-  }
 
   const onPressInfoIcon = () => {
     setEducationDialogVisible(true)
@@ -206,9 +137,6 @@ function FiatExchangeOptions({ route, navigation }: Props) {
         : FiatExchangeEvents.cico_cash_out_info_cancel
     )
   }
-
-  const asyncLocalCicoProviders = useAsync(fetchLocalCicoProviders, [])
-  const localCicoProviders = asyncLocalCicoProviders.result
 
   return (
     <SafeAreaView style={styles.content}>
@@ -230,7 +158,6 @@ function FiatExchangeOptions({ route, navigation }: Props) {
               borderTopRightRadius: 8,
               borderBottomWidth: 0.5,
             }}
-            enabled={selectedPaymentMethod !== PaymentMethod.Address}
             testID="radio/cUSD"
           />
           <CurrencyRadioItem
@@ -242,14 +169,6 @@ function FiatExchangeOptions({ route, navigation }: Props) {
               borderTopWidth: 0.5,
               borderBottomWidth: 0.5,
             }}
-            enabled={
-              celoEuroEnabled &&
-              ((isCashIn &&
-                (selectedPaymentMethod === PaymentMethod.Bank ||
-                  selectedPaymentMethod === PaymentMethod.Card)) ||
-                selectedPaymentMethod === PaymentMethod.Exchange ||
-                selectedPaymentMethod === PaymentMethod.GiftCard)
-            }
             testID="radio/cEUR"
           />
           <CurrencyRadioItem
@@ -262,85 +181,10 @@ function FiatExchangeOptions({ route, navigation }: Props) {
               borderBottomRightRadius: 8,
             }}
             testID="radio/CELO"
-            enabled={selectedPaymentMethod !== PaymentMethod.GiftCard}
           />
         </View>
       </ScrollView>
       <View style={styles.bottomContainer}>
-        <Text style={styles.selectPaymentMethod}>
-          {t(isCashIn ? 'selectPaymentMethod' : 'selectCashOutMethod')}
-        </Text>
-        <View style={styles.paymentMethodsContainer}>
-          {asyncLocalCicoProviders.loading ? (
-            <ActivityIndicator style={styles.loading} size="small" color={colors.greenUI} />
-          ) : (
-            <>
-              {isCashIn ? (
-                <>
-                  <PaymentMethodRadioItem
-                    text={t('payWithCard')}
-                    selected={selectedPaymentMethod === PaymentMethod.Card}
-                    onSelect={onSelectPaymentMethod(PaymentMethod.Card)}
-                    testID="payWithCard"
-                  />
-                  <PaymentMethodRadioItem
-                    text={t('payWithBank')}
-                    selected={selectedPaymentMethod === PaymentMethod.Bank}
-                    onSelect={onSelectPaymentMethod(PaymentMethod.Bank)}
-                    testID="payWithBank"
-                  />
-                </>
-              ) : (
-                <>
-                  <PaymentMethodRadioItem
-                    text={t('payWithBank')}
-                    selected={selectedPaymentMethod === PaymentMethod.Bank}
-                    onSelect={onSelectPaymentMethod(PaymentMethod.Bank)}
-                    enabled={
-                      selectedCurrency === Currency.Dollar
-                      // || (selectedCurrency === Currency.Euro && celoEuroEnabled) - Currently no cEUR fiat cash-out providers
-                    }
-                    testID="receiveWithBank"
-                  />
-                  <PaymentMethodRadioItem
-                    text={t('receiveWithBidali')}
-                    selected={selectedPaymentMethod === PaymentMethod.GiftCard}
-                    onSelect={onSelectPaymentMethod(PaymentMethod.GiftCard)}
-                    enabled={BIDALI_CURRENCIES.includes(selectedCurrency)}
-                    testID="receiveWithBidali"
-                  />
-                  <PaymentMethodRadioItem
-                    text={t('receiveOnAddress')}
-                    selected={selectedPaymentMethod === PaymentMethod.Address}
-                    onSelect={onSelectPaymentMethod(PaymentMethod.Address)}
-                    enabled={selectedCurrency === Currency.Celo}
-                    testID="receiveOnAddress"
-                  />
-                </>
-              )}
-              <PaymentMethodRadioItem
-                text={t('payWithExchange')}
-                selected={selectedPaymentMethod === PaymentMethod.Exchange}
-                onSelect={onSelectPaymentMethod(PaymentMethod.Exchange)}
-                testID="withExchange"
-              />
-              {getAvailableLocalProviders(
-                localCicoProviders,
-                isCashIn,
-                userLocationData.countryCodeAlpha2,
-                selectedCurrency
-              ).map((provider) => (
-                <PaymentMethodRadioItem
-                  key={provider.name}
-                  text={provider.name}
-                  selected={selectedLocalProvider?.name === provider.name}
-                  onSelect={onSelectPaymentMethod(PaymentMethod.LocalProvider, provider)}
-                  enabled={provider[asset][flow]}
-                />
-              ))}
-            </>
-          )}
-        </View>
         <Button
           style={styles.goToProvider}
           type={BtnTypes.PRIMARY}
@@ -404,40 +248,11 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     paddingHorizontal: variables.contentPadding,
   },
-  selectPaymentMethod: {
-    ...fontStyles.small500,
-    marginTop: variables.contentPadding,
-  },
-  paymentMethodsContainer: {
-    flexDirection: 'column',
-    marginTop: 8,
-    borderWidth: 1,
-    borderColor: colors.gray3,
-    borderRadius: 8,
-    minHeight: 100,
-  },
-  paymentMethodItemContainer: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    padding: 8,
-  },
-  paymentMethodItemText: {
-    ...fontStyles.small,
-    marginLeft: 8,
-    flex: 1,
-  },
   goToProvider: {
     width: '50%',
     alignSelf: 'center',
     marginTop: 40,
     marginBottom: 24,
-  },
-  loading: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    top: 0,
   },
 })
 

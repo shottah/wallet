@@ -13,6 +13,7 @@ import { canSendTokensSelector } from 'src/send/selectors'
 import colors from 'src/styles/colors'
 import variables from 'src/styles/variables'
 import { tokensListSelector } from 'src/tokens/selectors'
+import { Currency } from 'src/utils/currencies'
 
 export default function SendOrRequestBar() {
   const sendButtonsDisabled = !useSelector(canSendTokensSelector)
@@ -30,7 +31,14 @@ export default function SendOrRequestBar() {
 
   const onPressQrCode = () => {
     ValoraAnalytics.track(HomeEvents.home_qr)
-    navigate(Screens.QRNavigator)
+    navigate(Screens.SelectProvider, {
+      isCashIn: true,
+      selectedCrypto: Currency.Dollar,
+      amount: {
+        crypto: 20,
+        fiat: 20,
+      },
+    })
   }
 
   const { t } = useTranslation()

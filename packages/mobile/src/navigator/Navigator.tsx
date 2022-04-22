@@ -52,6 +52,7 @@ import FiatExchangeOptions, {
   fiatExchangesOptionsScreenOptions,
 } from 'src/fiatExchanges/FiatExchangeOptions'
 import ProviderOptionsScreen from 'src/fiatExchanges/ProviderOptionsScreen'
+import SelectProviderScreen from 'src/fiatExchanges/SelectProvider'
 import SimplexScreen from 'src/fiatExchanges/SimplexScreen'
 import Spend, { spendScreenOptions } from 'src/fiatExchanges/Spend'
 import i18n from 'src/i18n'
@@ -544,6 +545,11 @@ const settingsScreens = (Navigator: typeof Stack) => (
       options={ProviderOptionsScreen.navigationOptions}
       name={Screens.ProviderOptionsScreen}
       component={ProviderOptionsScreen}
+    />
+    <Navigator.Screen
+      options={SelectProviderScreen.navigationOptions}
+      name={Screens.SelectProvider}
+      component={SelectProviderScreen}
     />
     <Navigator.Screen
       options={BidaliScreen.navigationOptions}

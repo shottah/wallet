@@ -927,7 +927,6 @@ interface FiatExchangeEventsProperties {
   }
   [FiatExchangeEvents.cico_option_chosen]: {
     isCashIn: boolean
-    paymentMethod: PaymentMethod
     currency: Currency
   }
   [FiatExchangeEvents.provider_chosen]: {

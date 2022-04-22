@@ -120,7 +120,6 @@ export type StackParamList = {
   [Screens.FiatExchange]: undefined
   [Screens.FiatExchangeAmount]: {
     currency: Currency
-    paymentMethod: PaymentMethod.Card | PaymentMethod.Bank
     isCashIn: boolean
   }
   [Screens.FiatExchangeOptions]: {
@@ -228,6 +227,14 @@ export type StackParamList = {
     selectedCountryCodeAlpha2: string
   }
   [Screens.SelectLocalCurrency]: undefined
+  [Screens.SelectProvider]: {
+    isCashIn?: boolean
+    selectedCrypto: Currency
+    amount: {
+      crypto: number
+      fiat: number
+    }
+  }
   [Screens.Send]:
     | {
         isOutgoingPaymentRequest?: boolean

@@ -63,6 +63,7 @@ export enum Screens {
   RegulatoryTerms = 'RegulatoryTerms',
   SelectCountry = 'SelectCountry',
   SelectLocalCurrency = 'SelectLocalCurrency',
+  SelectProvider = 'SelectProvider',
   Send = 'Send',
   SendAmount = 'SendAmount',
   SendAmountLegacy = 'SendAmountLegacy',

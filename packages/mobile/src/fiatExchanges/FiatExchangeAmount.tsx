@@ -168,7 +168,7 @@ function FiatExchangeAmount({ route }: Props) {
       isCashIn,
     })
 
-    navigate(Screens.ProviderOptionsScreen, {
+    navigate(Screens.SelectProvider, {
       isCashIn,
       selectedCrypto: currency,
       amount: {
@@ -177,7 +177,6 @@ function FiatExchangeAmount({ route }: Props) {
         // necessary once we support inputting an amount in both crypto and fiat
         fiat: Math.round(localCurrencyAmountRequested.toNumber()),
       },
-      paymentMethod: route.params.paymentMethod,
     })
   }
 
