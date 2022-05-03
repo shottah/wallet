@@ -9,6 +9,7 @@ import { SUPERCHARGE_T_AND_C } from 'src/config'
 import ConsumerIncentivesHomeScreen from 'src/consumerIncentives/ConsumerIncentivesHomeScreen'
 import { ONE_CUSD_REWARD_RESPONSE } from 'src/consumerIncentives/testValues'
 import { SuperchargePendingReward, SuperchargeToken } from 'src/consumerIncentives/types'
+import { FiatExchangeFlow } from 'src/fiatExchanges/utils'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { RootState } from 'src/redux/reducers'
@@ -162,7 +163,9 @@ describe('ConsumerIncentivesHomeScreen', () => {
     )
 
     fireEvent.press(getByTestId('ConsumerIncentives/CTA'))
-    expect(navigate).toHaveBeenCalledWith(Screens.FiatExchangeOptions, { isCashIn: true })
+    expect(navigate).toHaveBeenCalledWith(Screens.FiatExchangeCurrency, {
+      flow: FiatExchangeFlow.CashIn,
+    })
   })
 
   it('navigates to Phone Confirmation screen if user is not verified and CTA is tapped', async () => {

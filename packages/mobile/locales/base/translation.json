@@ -1222,6 +1222,7 @@
     "viewExchanges": "View Exchanges",
     "card": "Credit / Debit Card",
     "bank": "Bank Account",
+    "mobileMoney": "Mobile Money",
     "minFee": "Min Fee",
     "numProviders": "{{count}} Providers",
     "fee": "Fee",
@@ -1230,5 +1231,26 @@
     "oneHour": "Less Than 1 Hour",
     "bestRate": "Best Rate",
     "header": "Select Payment Method"
+  },
+  "fiatExchangeFlow": {
+    "CashIn": {
+      "fiatExchangeTitle": "Add Funds",
+      "fiatExchangeSubtitle": "Fund your Valora account from a bank, card or exchange.",
+      "selectCurrencyTitle": "Add Funds",
+      "exchangeAmmountTitle": "Add {{currency}}",
+      "selectProviderHeader": "Select Payment Method"
+    },
+    "CashOut": {
+      "fiatExchangeTitle": "Withdraw",
+      "fiatExchangeSubtitle": "Get funds out of Valora and into a bank account, card, crypto exchange or to mobile money.",
+      "selectCurrencyTitle": "Withdraw Funds",
+      "exchangeAmmountTitle": "Withdraw {{currency}}",
+      "selectProviderHeader": "Select Withdraw Method"
+    },
+    "Spend": {
+      "fiatExchangeTitle": "Spend",
+      "fiatExchangeSubtitle": "Spend on gift cards and other purchases.",
+      "selectCurrencyTitle": "Spend Funds"
+    }
   }
 }

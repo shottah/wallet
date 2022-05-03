@@ -24,7 +24,6 @@ import {
   ALERT_BANNER_DURATION,
   CELO_SUPPORT_EMAIL_ADDRESS,
   DOLLAR_ADD_FUNDS_MAX_AMOUNT,
-  DOLLAR_ADD_FUNDS_MIN_AMOUNT,
 } from 'src/config'
 import { fetchExchangeRate } from 'src/exchange/actions'
 import i18n from 'src/i18n'
@@ -36,7 +35,7 @@ import {
   useLocalCurrencyCode,
 } from 'src/localCurrency/hooks'
 import { localCurrencyExchangeRatesSelector } from 'src/localCurrency/selectors'
-import { emptyHeader, HeaderTitleWithBalance, HeaderTitleWithSubtitle } from 'src/navigator/Headers'
+import { emptyHeader, HeaderTitleWithBalance } from 'src/navigator/Headers'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
 import { StackParamList } from 'src/navigator/types'
@@ -47,7 +46,7 @@ import fontStyles from 'src/styles/fonts'
 import variables from 'src/styles/variables'
 import { Currency } from 'src/utils/currencies'
 import { roundDown, roundUp } from 'src/utils/formatting'
-import Logger from 'src/utils/Logger'
+import { CICOFlow } from './utils'
 
 const { decimalSeparator } = getNumberFormatSettings()
 
@@ -74,7 +73,7 @@ function FiatExchangeAmount({ route }: Props) {
   const parsedInputAmount = parseInputAmount(inputAmount, decimalSeparator)
   const localCurrencyCode = useLocalCurrencyCode()
 
-  const { currency } = route.params
+  const { currency, flow } = route.params
 
   const localCurrencySymbol = LocalCurrencySymbol[localCurrencyCode]
   const displaySymbol = currency === Currency.Celo ? '' : localCurrencySymbol
@@ -110,10 +109,6 @@ function FiatExchangeAmount({ route }: Props) {
     useCurrencyToLocalAmount(new BigNumber(DOLLAR_ADD_FUNDS_MAX_AMOUNT), Currency.Dollar) ||
     new BigNumber(0)
 
-  const localCurrencyMinAmount =
-    useCurrencyToLocalAmount(new BigNumber(DOLLAR_ADD_FUNDS_MIN_AMOUNT), Currency.Dollar) ||
-    new BigNumber(0)
-
   const localCurrencyDailyLimitAmount =
     useCurrencyToLocalAmount(new BigNumber(dailyLimitCusd), Currency.Dollar) || new BigNumber(0)
 
@@ -124,25 +119,12 @@ function FiatExchangeAmount({ route }: Props) {
       currency
     ) || new BigNumber(0)
 
-  const currencyMinAmount =
-    useConvertBetweenCurrencies(
-      new BigNumber(DOLLAR_ADD_FUNDS_MIN_AMOUNT),
-      Currency.Dollar,
-      currency
-    ) || new BigNumber(0)
-
   let overLocalLimitDisplayString = ''
-  let underLocalLimitDisplayString = ''
   if (localCurrencyCode !== LocalCurrencyCode.USD) {
     overLocalLimitDisplayString =
       currency === Currency.Celo
         ? ` (${roundUp(currencyMaxAmount, 3)} CELO)`
         : ` (${localCurrencySymbol}${roundUp(localCurrencyMaxAmount)})`
-
-    underLocalLimitDisplayString =
-      currency === Currency.Celo
-        ? ` (${roundUp(currencyMinAmount, 3)} CELO)`
-        : ` (${localCurrencySymbol}${roundUp(localCurrencyMinAmount)})`
   }
 
   const dispatch = useDispatch()
@@ -160,16 +142,14 @@ function FiatExchangeAmount({ route }: Props) {
   }
 
   function goToProvidersScreen() {
-    const { isCashIn } = route.params
-
     ValoraAnalytics.track(FiatExchangeEvents.cico_add_funds_amount_continue, {
       amount: currencyAmountRequested.toNumber(),
       currency,
-      isCashIn,
+      flow,
     })
 
     navigate(Screens.SelectProvider, {
-      isCashIn,
+      flow,
       selectedCrypto: currency,
       amount: {
         crypto: currencyAmountRequested.toNumber(),
@@ -181,18 +161,8 @@ function FiatExchangeAmount({ route }: Props) {
   }
 
   function onPressContinue() {
-    if (!route.params.isCashIn && currency === Currency.Celo) {
-      Logger.debug(
-        'Error: Got to FiatExchangeAmountScreen with CELO as the cash-out asset - should never happen'
-      )
-      return
-    }
-
-    if (route.params.isCashIn) {
-      if (
-        localCurrencyAmountRequested.isGreaterThan(localCurrencyMaxAmount) ||
-        localCurrencyAmountRequested.isLessThan(localCurrencyMinAmount)
-      ) {
+    if (flow === CICOFlow.CashIn) {
+      if (localCurrencyAmountRequested.isGreaterThan(localCurrencyMaxAmount)) {
         setShowingInvalidAmountDialog(true)
         ValoraAnalytics.track(FiatExchangeEvents.cico_add_funds_invalid_amount, {
           amount: currencyAmountRequested.toNumber(),
@@ -240,15 +210,10 @@ function FiatExchangeAmount({ route }: Props) {
         onBackgroundPress={closeInvalidAmountDialog}
         testID={'invalidAmountDialog'}
       >
-        {localCurrencyAmountRequested.isGreaterThan(localCurrencyMaxAmount)
-          ? t('invalidAmountDialog.maxAmount', {
-              usdLimit: `$${DOLLAR_ADD_FUNDS_MAX_AMOUNT}`,
-              localLimit: overLocalLimitDisplayString,
-            })
-          : t('invalidAmountDialog.minAmount', {
-              usdLimit: `$${DOLLAR_ADD_FUNDS_MIN_AMOUNT}`,
-              localLimit: underLocalLimitDisplayString,
-            })}
+        {t('invalidAmountDialog.maxAmount', {
+          usdLimit: `$${DOLLAR_ADD_FUNDS_MAX_AMOUNT}`,
+          localLimit: overLocalLimitDisplayString,
+        })}
       </Dialog>
       <Dialog
         isVisible={showingDailyLimitDialog}
@@ -278,9 +243,7 @@ function FiatExchangeAmount({ route }: Props) {
       >
         <View style={styles.amountInputContainer}>
           <View>
-            <Text style={styles.exchangeBodyText}>{`${t('amount')} ${
-              currency === Currency.Celo ? '(CELO)' : ''
-            }`}</Text>
+            <Text style={styles.exchangeBodyText}>{t('amount')}</Text>
           </View>
           <TextInput
             multiline={true}
@@ -345,12 +308,14 @@ FiatExchangeAmount.navOptions = ({
 }) => ({
   ...emptyHeader,
   headerLeft: () => <BackButton eventName={FiatExchangeEvents.cico_add_funds_amount_back} />,
-  headerTitle: () =>
-    route.params?.isCashIn ? (
-      <HeaderTitleWithSubtitle title={i18n.t('addFunds')} />
-    ) : (
-      <HeaderTitleWithBalance title={i18n.t('cashOut')} token={route.params.currency} />
-    ),
+  headerTitle: () => (
+    <HeaderTitleWithBalance
+      title={i18n.t(`fiatExchangeFlow.${route.params.flow}.exchangeAmmountTitle`, {
+        currency: route.params.currency === Currency.Celo ? 'CELO' : route.params.currency,
+      })}
+      token={route.params.currency}
+    />
+  ),
 })
 
 export default FiatExchangeAmount

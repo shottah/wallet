@@ -21,6 +21,7 @@ import {
   SuperchargeToken,
   SuperchargeTokenConfig,
 } from 'src/consumerIncentives/types'
+import { FiatExchangeFlow } from 'src/fiatExchanges/utils'
 import { WEI_PER_TOKEN } from 'src/geth/consts'
 import InfoIcon from 'src/icons/InfoIcon'
 import Logo, { LogoTypes } from 'src/icons/Logo'
@@ -233,7 +234,7 @@ export default function ConsumerIncentivesHomeScreen() {
         buttonPressed: RewardsScreenCta.ClaimRewards,
       })
     } else if (userIsVerified) {
-      navigate(Screens.FiatExchangeOptions, { isCashIn: true })
+      navigate(Screens.FiatExchangeCurrency, { flow: FiatExchangeFlow.CashIn })
       ValoraAnalytics.track(RewardsEvents.rewards_screen_cta_pressed, {
         buttonPressed: RewardsScreenCta.CashIn,
       })

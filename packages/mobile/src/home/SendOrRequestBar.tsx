@@ -5,6 +5,7 @@ import { HomeEvents } from 'src/analytics/Events'
 import ValoraAnalytics from 'src/analytics/ValoraAnalytics'
 import Button, { BtnSizes } from 'src/components/Button'
 import Touchable from 'src/components/Touchable'
+import { CICOFlow } from 'src/fiatExchanges/utils'
 import QRCodeBorderlessIcon from 'src/icons/QRCodeBorderless'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -32,7 +33,7 @@ export default function SendOrRequestBar() {
   const onPressQrCode = () => {
     ValoraAnalytics.track(HomeEvents.home_qr)
     navigate(Screens.SelectProvider, {
-      isCashIn: true,
+      flow: CICOFlow.CashIn,
       selectedCrypto: Currency.Dollar,
       amount: {
         crypto: 20,

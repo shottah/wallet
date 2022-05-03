@@ -14,7 +14,6 @@ import Expandable from 'src/components/Expandable'
 import { emptyHeader } from 'src/navigator/Headers'
 import colors from 'src/styles/colors'
 import fontStyles from 'src/styles/fonts'
-import { PaymentMethod } from './FiatExchangeOptions'
 import {
   fetchProviders,
   ProviderQuote,
@@ -24,6 +23,11 @@ import {
   CicoQuote,
   getFeeValueFromQuotes,
   SimplexQuote,
+  PaymentMethod,
+  fetchLocalCicoProviders,
+  getAvailableLocalProviders,
+  LocalCicoProvider,
+  CICOFlow,
 } from './utils'
 import { StackScreenProps } from '@react-navigation/stack'
 import { StackParamList } from 'src/navigator/types'
@@ -46,6 +50,7 @@ import { navigate } from 'src/navigator/NavigationService'
 import { navigateToURI } from 'src/utils/linking'
 import Dialog from 'src/components/Dialog'
 import i18n from 'src/i18n'
+import { RouteProp } from '@react-navigation/native'
 
 const TAG = 'SelectProviderScreen'
 
@@ -57,7 +62,7 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
   const account = useSelector(currentAccountSelector)
   const localCurrency = useSelector(getLocalCurrencyCode)
   const [noPaymentMethods, setNoPaymentMethods] = useState(false)
-  const isCashIn = route.params?.isCashIn ?? true
+  const { flow } = route.params
 
   const currencyToBuy = {
     [Currency.Celo]: CiCoCurrency.CELO,
@@ -70,8 +75,9 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
       Logger.error(TAG, 'No account set')
       return
     }
-    userLocation.region = 'CA'
-    userLocation.ipAddress = '192.145.80.52'
+    userLocation.countryCodeAlpha2 = 'US'
+    // userLocation.region = 'CA'
+    // userLocation.ipAddress = '192.145.80.52'
     try {
       const providers = await fetchProviders({
         userLocation,
@@ -80,9 +86,18 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
         digitalAsset: currencyToBuy,
         fiatAmount: route.params.amount.fiat,
         digitalAssetAmount: route.params.amount.crypto,
-        txType: isCashIn ? 'buy' : 'sell',
+        txType: flow === CICOFlow.CashIn ? 'buy' : 'sell',
       })
-      return providers
+
+      const localProviders = await fetchLocalCicoProviders()
+      const availableLocalProviders = getAvailableLocalProviders(
+        localProviders,
+        flow === CICOFlow.CashIn,
+        userLocation.countryCodeAlpha2,
+        currencyToBuy
+      )
+
+      return { providers, availableLocalProviders }
     } catch (error) {
       dispatch(showError(ErrorMessages.PROVIDER_FETCH_FAILED))
     }
@@ -90,7 +105,7 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
 
   const quoteOnPress = ({ quote, provider }: CicoQuote) => () => {
     ValoraAnalytics.track(FiatExchangeEvents.provider_chosen, {
-      isCashIn,
+      flow,
       provider: provider.name,
     })
 
@@ -112,11 +127,11 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
       </View>
     )
   }
-  const activeProviders = asyncProviders.result
+  const activeProviders = asyncProviders.result?.providers
 
   const cicoQuotes: CicoQuote[] =
     getQuotes(activeProviders)
-      ?.filter(({ quote }) => (isCashIn ? quote.cashIn : quote.cashOut))
+      ?.filter(({ quote }) => (flow === CICOFlow.CashIn ? quote.cashIn : quote.cashOut))
       .sort(sortQuotes) || []
   return (
     <ScrollView>
@@ -132,7 +147,11 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
         setNoPaymentMethods={setNoPaymentMethods}
         quoteOnPress={quoteOnPress}
       />
-      <ExchangesSection selectedCurrency={route.params.selectedCrypto} isCashIn={isCashIn} />
+      <LocalProviderMobileMoneySection
+        localProvider={asyncProviders.result?.availableLocalProviders[0]}
+        digitalAsset={currencyToBuy}
+      />
+      <ExchangesSection selectedCurrency={route.params.selectedCrypto} flow={flow} />
       <LimitedPaymentMethods visible={noPaymentMethods} />
     </ScrollView>
   )
@@ -174,17 +193,17 @@ function LimitedPaymentMethods({ visible }: { visible: boolean }) {
 }
 
 function ExchangesSection({
-  isCashIn,
+  flow,
   selectedCurrency,
 }: {
-  isCashIn: boolean
+  flow: CICOFlow
   selectedCurrency: Currency
 }) {
   const { t } = useTranslation()
   const goToExchangesScreen = () => {
     navigate(Screens.ExternalExchanges, {
       currency: selectedCurrency,
-      isCashIn: isCashIn,
+      isCashIn: flow === CICOFlow.CashIn,
     })
   }
   return (
@@ -199,6 +218,38 @@ function ExchangesSection({
 
           <View style={styles.right}>
             <Text style={styles.linkToOtherScreen}>{t('selectProviderScreen.viewExchanges')}</Text>
+          </View>
+        </View>
+      </Touchable>
+    </View>
+  )
+}
+
+function LocalProviderMobileMoneySection({
+  localProvider,
+  digitalAsset,
+}: {
+  localProvider: LocalCicoProvider | undefined
+  digitalAsset: CiCoCurrency
+}) {
+  const { t } = useTranslation()
+  if (!localProvider) {
+    return null
+  }
+  const goToExchangesScreen = () => {
+    navigateToURI(localProvider[digitalAsset === CiCoCurrency.CUSD ? 'cusd' : 'celo'].url)
+  }
+  return (
+    <View style={styles.container}>
+      <Touchable onPress={goToExchangesScreen}>
+        <View style={{ ...styles.expandableContainer, paddingVertical: 27 }}>
+          <View style={styles.left}>
+            <Text style={styles.category}>{t('selectProviderScreen.mobileMoney')}</Text>
+            <Text style={styles.fee}>{t('selectProviderScreen.feesVary')}</Text>
+          </View>
+
+          <View style={styles.right}>
+            <Text style={styles.linkToOtherScreen}>{localProvider.name}</Text>
           </View>
         </View>
       </Touchable>
@@ -455,9 +506,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 })
-
-SelectProviderScreen.navigationOptions = {
+SelectProviderScreen.navigationOptions = ({
+  route,
+}: {
+  route: RouteProp<StackParamList, Screens.SelectProvider>
+}) => ({
   ...emptyHeader,
   headerLeft: () => <BackButton />,
-  headerTitle: i18n.t('selectProviderScreen.header'),
-}
+  headerTitle: i18n.t(`fiatExchangeFlow.${route.params.flow}.selectProviderHeader`),
+})

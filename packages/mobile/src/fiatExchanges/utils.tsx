@@ -1,14 +1,30 @@
 import firebase from '@react-native-firebase/app'
 import { default as DeviceInfo } from 'react-native-device-info'
-import { PaymentMethod } from 'src/fiatExchanges/FiatExchangeOptions'
 import networkConfig from 'src/geth/networkConfig'
 import { LocalCurrencyCode } from 'src/localCurrency/consts'
 import { UserLocationData } from 'src/networkInfo/saga'
-import { CiCoCurrency, Currency } from 'src/utils/currencies'
+import { CiCoCurrency } from 'src/utils/currencies'
 import { fetchWithTimeout } from 'src/utils/fetchWithTimeout'
 import Logger from 'src/utils/Logger'
 
 const TAG = 'fiatExchanges:utils'
+
+export enum FiatExchangeFlow {
+  CashIn = 'CashIn',
+  CashOut = 'CashOut',
+  Spend = 'Spend',
+}
+
+export enum CICOFlow {
+  CashIn = 'CashIn',
+  CashOut = 'CashOut',
+}
+
+export enum PaymentMethod {
+  Bank = 'Bank',
+  Card = 'Card',
+  MobileMoney = 'MobileMoney',
+}
 
 interface ProviderRequestData {
   userLocation: UserLocationData
@@ -292,9 +308,13 @@ export const getAvailableLocalProviders = (
   localCicoProviders: LocalCicoProvider[] | undefined,
   isCashIn: boolean,
   userCountry: string | null,
-  selectedCurrency: Currency
+  selectedCurrency: CiCoCurrency
 ) => {
-  if (!localCicoProviders || !userCountry) {
+  if (
+    !localCicoProviders ||
+    !userCountry ||
+    ![CiCoCurrency.CUSD, CiCoCurrency.CELO].includes(selectedCurrency)
+  ) {
     return []
   }
 
@@ -305,6 +325,8 @@ export const getAvailableLocalProviders = (
   )
 
   return activeLocalProviders.filter((provider) =>
-    provider[selectedCurrency === Currency.Dollar ? 'cusd' : 'celo'].countries.includes(userCountry)
+    provider[selectedCurrency === CiCoCurrency.CUSD ? 'cusd' : 'celo'].countries.includes(
+      userCountry
+    )
   )
 }

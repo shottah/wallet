@@ -1,19 +1,18 @@
 import { fireEvent, render } from '@testing-library/react-native'
-import BigNumber from 'bignumber.js'
 import * as React from 'react'
 import { Provider } from 'react-redux'
-import FiatExchangeOptions from 'src/fiatExchanges/FiatExchangeOptions'
+import FiatExchangeCurrency from 'src/fiatExchanges/FiatExchangeCurrency'
 import { Screens } from 'src/navigator/Screens'
 import { createMockStore, getMockStackScreenProps } from 'test/utils'
 import { navigate } from 'src/navigator/NavigationService'
+import { FiatExchangeFlow } from './utils'
 
-const mockScreenProps = (isCashIn: boolean) =>
-  getMockStackScreenProps(Screens.FiatExchangeOptions, {
-    isCashIn,
-    amount: new BigNumber('1'),
+const mockScreenProps = (flow: FiatExchangeFlow) =>
+  getMockStackScreenProps(Screens.FiatExchangeCurrency, {
+    flow,
   })
 
-describe('FiatExchangeOptions', () => {
+describe('FiatExchangeCurrency', () => {
   beforeEach(() => {
     jest.useRealTimers()
   })
@@ -21,7 +20,7 @@ describe('FiatExchangeOptions', () => {
   it('renders correctly', () => {
     const tree = render(
       <Provider store={createMockStore({})}>
-        <FiatExchangeOptions {...mockScreenProps(true)} />
+        <FiatExchangeCurrency {...mockScreenProps(FiatExchangeFlow.CashIn)} />
       </Provider>
     )
     expect(tree.getByText('(cUSD)')).toBeTruthy()
@@ -31,7 +30,7 @@ describe('FiatExchangeOptions', () => {
     fireEvent.press(tree.getByText('next'))
     expect(navigate).toHaveBeenCalledWith(Screens.FiatExchangeAmount, {
       currency: 'cUSD',
-      isCashIn: true,
+      flow: FiatExchangeFlow.CashIn,
     })
   })
 })
