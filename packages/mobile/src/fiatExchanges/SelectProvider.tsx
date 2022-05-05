@@ -75,9 +75,6 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
       Logger.error(TAG, 'No account set')
       return
     }
-    userLocation.countryCodeAlpha2 = 'US'
-    // userLocation.region = 'CA'
-    // userLocation.ipAddress = '192.145.80.52'
     try {
       const providers = await fetchProviders({
         userLocation,
@@ -373,6 +370,7 @@ export function PaymentMethodSection({
 
                 <View style={styles.imageContainer}>
                   <Image
+                    testID={`image-${sectionQuotes[0].provider.name}`}
                     source={{ uri: sectionQuotes[0].provider.logoWide }}
                     style={styles.providerImage}
                     resizeMode="center"
@@ -404,6 +402,7 @@ export function PaymentMethodSection({
 
               <View style={styles.imageContainer}>
                 <Image
+                  testID={`image-${cicoQuote.provider.name}`}
                   source={{ uri: cicoQuote.provider.logoWide }}
                   style={styles.providerImage}
                   resizeMode="center"

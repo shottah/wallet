@@ -5,7 +5,6 @@ import { HomeEvents } from 'src/analytics/Events'
 import ValoraAnalytics from 'src/analytics/ValoraAnalytics'
 import Button, { BtnSizes } from 'src/components/Button'
 import Touchable from 'src/components/Touchable'
-import { CICOFlow } from 'src/fiatExchanges/utils'
 import QRCodeBorderlessIcon from 'src/icons/QRCodeBorderless'
 import { navigate } from 'src/navigator/NavigationService'
 import { Screens } from 'src/navigator/Screens'
@@ -14,7 +13,6 @@ import { canSendTokensSelector } from 'src/send/selectors'
 import colors from 'src/styles/colors'
 import variables from 'src/styles/variables'
 import { tokensListSelector } from 'src/tokens/selectors'
-import { Currency } from 'src/utils/currencies'
 
 export default function SendOrRequestBar() {
   const sendButtonsDisabled = !useSelector(canSendTokensSelector)
@@ -32,14 +30,7 @@ export default function SendOrRequestBar() {
 
   const onPressQrCode = () => {
     ValoraAnalytics.track(HomeEvents.home_qr)
-    navigate(Screens.SelectProvider, {
-      flow: CICOFlow.CashIn,
-      selectedCrypto: Currency.Dollar,
-      amount: {
-        crypto: 20,
-        fiat: 20,
-      },
-    })
+    navigate(Screens.QRNavigator)
   }
 
   const { t } = useTranslation()
