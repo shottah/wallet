@@ -89,7 +89,7 @@ export default function SelectProviderScreen({ route, navigation }: Props) {
       const localProviders = await fetchLocalCicoProviders()
       const availableLocalProviders = getAvailableLocalProviders(
         localProviders,
-        flow === CICOFlow.CashIn,
+        flow,
         userLocation.countryCodeAlpha2,
         currencyToBuy
       )

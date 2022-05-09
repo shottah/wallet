@@ -306,7 +306,7 @@ export const fetchLocalCicoProviders = async () => {
 
 export const getAvailableLocalProviders = (
   localCicoProviders: LocalCicoProvider[] | undefined,
-  isCashIn: boolean,
+  flow: CICOFlow,
   userCountry: string | null,
   selectedCurrency: CiCoCurrency
 ) => {
@@ -320,8 +320,8 @@ export const getAvailableLocalProviders = (
 
   const activeLocalProviders = localCicoProviders.filter(
     (provider) =>
-      (isCashIn && (provider.cusd.cashIn || provider.celo.cashIn)) ||
-      (!isCashIn && (provider.cusd.cashOut || provider.celo.cashOut))
+      (flow === CICOFlow.CashIn && (provider.cusd.cashIn || provider.celo.cashIn)) ||
+      (flow === CICOFlow.CashOut && (provider.cusd.cashOut || provider.celo.cashOut))
   )
 
   return activeLocalProviders.filter((provider) =>
