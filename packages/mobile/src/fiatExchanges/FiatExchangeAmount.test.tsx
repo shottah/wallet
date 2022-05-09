@@ -6,11 +6,7 @@ import * as React from 'react'
 import { Provider } from 'react-redux'
 import { showError } from 'src/alert/actions'
 import { ErrorMessages } from 'src/app/ErrorMessages'
-import {
-  DEFAULT_DAILY_PAYMENT_LIMIT_CUSD,
-  DOLLAR_ADD_FUNDS_MAX_AMOUNT,
-  DOLLAR_ADD_FUNDS_MIN_AMOUNT,
-} from 'src/config'
+import { DEFAULT_DAILY_PAYMENT_LIMIT_CUSD, DOLLAR_ADD_FUNDS_MAX_AMOUNT } from 'src/config'
 import FiatExchangeAmount from 'src/fiatExchanges/FiatExchangeAmount'
 import { LocalCurrencyCode } from 'src/localCurrency/consts'
 import {

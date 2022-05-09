@@ -233,12 +233,12 @@ function LocalProviderMobileMoneySection({
   if (!localProvider) {
     return null
   }
-  const goToExchangesScreen = () => {
+  const goToLocalProvider = () => {
     navigateToURI(localProvider[digitalAsset === CiCoCurrency.CUSD ? 'cusd' : 'celo'].url)
   }
   return (
     <View style={styles.container}>
-      <Touchable onPress={goToExchangesScreen}>
+      <Touchable onPress={goToLocalProvider}>
         <View style={{ ...styles.expandableContainer, paddingVertical: 27 }}>
           <View style={styles.left}>
             <Text style={styles.category}>{t('selectProviderScreen.mobileMoney')}</Text>

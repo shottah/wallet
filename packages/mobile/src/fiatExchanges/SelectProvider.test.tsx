@@ -1,5 +1,5 @@
 import SelectProviderScreen, { PaymentMethodSection } from 'src/fiatExchanges/SelectProvider'
-import { fireEvent, render, waitFor } from '@testing-library/react-native'
+import { render, waitFor } from '@testing-library/react-native'
 import { FetchMock } from 'jest-fetch-mock/types'
 import * as React from 'react'
 import { LocalCurrencyCode } from 'src/localCurrency/consts'
