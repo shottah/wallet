@@ -1,9 +1,9 @@
 import { FiatAccountSchema, FiatAccountType } from '@fiatconnect/fiatconnect-types'
 import { FetchMock } from 'jest-fetch-mock'
-import Logger from '../utils/Logger'
+import Logger from 'src/utils/Logger'
 import { addNewFiatAccount, FiatConnectClientConfig, getFiatConnectProviders } from './index'
 
-jest.mock('../utils/Logger', () => ({
+jest.mock('src/utils/Logger', () => ({
   __esModule: true,
   namedExport: jest.fn(),
   default: {
@@ -31,7 +31,6 @@ describe('FiatConnect helpers', () => {
       expect(providers).toMatchObject([fakeProviderInfo])
     })
     it('Gives empty list and logs error on failure', async () => {
-      const loggerErrorSpy = jest.spyOn(Logger, 'error')
       mockFetch.mockResponseOnce(JSON.stringify({ providers: [] }), { status: 500 })
       const providers = await getFiatConnectProviders()
       expect(providers).toEqual([])
